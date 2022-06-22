@@ -9,12 +9,12 @@ export const Login = () => {
   const user_ID = useAppSelector(state => state.profile.user._id);
 
   if (user_ID) {
-    return <Navigate to={PATH.PROFILE}/>
+    return <Navigate to={PATH.PACKS_LIST}/>
   }
 
   return (
     <div className={s.smallContainer}>
-      <h1>Card samurai</h1>
+      <h1>Study Cards</h1>
       <h2>Sign in</h2>
       <LoginForm/>
     </div>

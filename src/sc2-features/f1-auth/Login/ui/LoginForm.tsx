@@ -3,10 +3,12 @@ import {useFormik} from 'formik';
 import {InputText} from "../../../../sc1-main/m1-ui/common/components/c1-InputText/InputText";
 import {Button} from "../../../../sc1-main/m1-ui/common/components/c2-Button/Button";
 import {Checkbox} from "../../../../sc1-main/m1-ui/common/components/c3-Checkbox/Checkbox";
-import {LoginThunkTC} from "../bll/loginReducer";
+import {loginThunkTC} from "../bll/loginReducer";
 import {NavLink} from "react-router-dom";
 import {PATH} from "../../../../sc1-main/m1-ui/Main/Pages";
 import {useAppDispatch} from "../../../../sc1-main/m2-bll/store";
+import {InputPassword} from "../../../../sc1-main/m1-ui/common/components/c4-InputPassword/InputPassword";
+import s from './auth.module.css';
 
 type FormikErrorType = {
   email?: string
@@ -41,46 +43,45 @@ export const LoginForm = () => {
     },
 
     onSubmit: values => {
-      // alert(JSON.stringify(values))
-      console.log(values)
-      dispatch<any>(LoginThunkTC(values.email, values.password, values.rememberMe));
+      dispatch<any>(loginThunkTC(values.email, values.password, values.rememberMe));
     },
   });
   return (
     <>
       <form onSubmit={formik.handleSubmit}>
+        <span className={s.inputLabel} style={{marginTop: '0px'}}>Email</span>
         <InputText
+          className={s.input}
           type="email"
           {...formik.getFieldProps('email')}
         />
         {formik.errors.email && formik.touched.email && <div style={{color: "red"}}>{formik.errors.email}</div>}
-        <InputText
-          type="password"
-          {...formik.getFieldProps('password')}
+        <span className={s.inputLabel} style={{marginTop: '10px'}}>Password</span>
+        <InputPassword className={s.input}
+                       {...formik.getFieldProps('password')}
         />
         {formik.errors.password && formik.touched.password &&
-        <div style={{color: "red"}}>{formik.errors.password}</div>}
+					<div style={{color: "red"}}>{formik.errors.password}</div>}
 
-        <label style={{display: 'flex', justifyContent: "center", alignItems: "center"}}>
+        <label className={s.rememberMe}>
           <Checkbox
             {...formik.getFieldProps('rememberMe')}
-          />Remember me
+          >{' '}</Checkbox>Remember me
         </label>
         <NavLink
           to={PATH.PASSWORD_RECOVERY}
-          className={""}
-          style={{margin: "20px auto", display: "block", color: "#2D2E46"}}>
+          className={s.forgotPass}>
           Forget password?
         </NavLink>
-        <Button type={'submit'} style={{margin: '40px auto 30px'}}>
+        <Button type={'submit'} className={s.submit}>
           Login
         </Button>
       </form>
       <span
-        style={{color: "#2D2E46", opacity: 0.5, display: "block", paddingBottom: "20px"}}>Don’t have an account?</span>
+        className={s.signUpLabel}>Don’t have an account?</span>
       <NavLink
         to={PATH.REGISTRATION}
-        style={{color: "#21268F", fontSize: "16px", fontWeight: 600}}
+        className={s.signUpIn}
       >Sign Up</NavLink>
     </>
   )

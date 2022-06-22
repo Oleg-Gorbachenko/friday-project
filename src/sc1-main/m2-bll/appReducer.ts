@@ -1,6 +1,6 @@
 import {AppThunkType} from "./store";
-import {ProfileApi} from "../../sc2-features/f2-profile/dal/profile-api";
 import {setAuthDataAC} from "../../sc2-features/f2-profile/bll/profileReducer";
+import {ProfileApi} from "../m3-dal/profile-api";
 
 // Types
 type InitStateType = typeof initState;
@@ -37,12 +37,9 @@ export const initializeAppTC = (): AppThunkType => (dispatch) => {
       const errorMessage = error.response
         ? error.response.data.error
         : (error.message + ', more details in the console');
-
       console.log('Error: ', errorMessage);
     })
-    .finally(() => {
-      dispatch(setAppIsInitializedAC(true));
-    });
+    .finally(() => dispatch(setAppIsInitializedAC(true)))
 };
 
 export const appReducer = (state: InitStateType = initState, action: AppActionsType): InitStateType => {

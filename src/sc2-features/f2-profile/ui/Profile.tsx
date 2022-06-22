@@ -1,86 +1,75 @@
-import React, {useState} from 'react';
-import {Button} from "../../../sc1-main/m1-ui/common/components/c2-Button/Button";
+import React, {useRef, useState} from 'react';
 import {useAppDispatch, useAppSelector} from "../../../sc1-main/m2-bll/store";
 import {updateNameThunk} from "../bll/profileReducer";
-import {EditModal} from "./EditModal/EditModal";
-import {MiniSpinner} from "../../../sc1-main/m1-ui/common/components/MiniSpinner/MiniSpinner";
-import s from './Profile.module.css'
+import s from './Profile.module.css';
 import {Navigate} from "react-router-dom";
 import {PATH} from "../../../sc1-main/m1-ui/Main/Pages";
-import {DoubleRange} from "../../../sc1-main/m1-ui/common/components/DoubleRange/DoubleRange";
-import {Debounce} from "../../../sc1-main/m1-ui/common/components/Debounce/Debounce";
+import {UserType} from "../../../sc1-main/m3-dal/profile-api";
+import {ButtonLoad} from "../../../sc1-main/m1-ui/common/components/SpButton/ButtonLoad";
+import {ReactComponent as UploadAva} from '../../../assets/Web_app/add_photo.svg';
+import {ReactComponent as DefaultAva} from '../../../assets/Web_app/robot_ava.svg';
+import {InputText} from "../../../sc1-main/m1-ui/common/components/c1-InputText/InputText";
+import {ChangesInputs} from "./ChangesInputs/ChangesInputs";
 
 export const Profile = () => {
 
-  const [name, setName] = useState<string>('');
-  const [activeModal, setActiveModal] = useState(false);
-  const [valueArr, setValueArr] = useState([0, 100]);
-
   const dispatch = useAppDispatch();
-  const userNameStore = useAppSelector<string>(store => store.profile.user.name);
-  const userAva = useAppSelector<string | undefined>(store => store.profile.user.avatar);
+  const {name, avatar, email} = useAppSelector<UserType>(store => store.profile.user);
   const isLoading = useAppSelector<boolean>(state => state.profile.loading);
 
+  const [value, setValue] = useState<string>(name);
+  const [error, setError] = useState<string>('');
+  const [newPhoto, setNewPhoto] = useState('');
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const changeName = () => {
-    dispatch(updateNameThunk(name, ''));
-    setActiveModal(false);
+    if (newPhoto === avatar) return setError('the same photo');
+    if (name === value && !newPhoto) return setError('nothing has changed');
+    dispatch(updateNameThunk(value, newPhoto));
   }
-  const editHandler = () => {
-    setActiveModal(true);
-  }
-  const onFocusHandler = () => {
-    name ? setName(name) : setName(userNameStore)
+  const cancelHandler = () => {
+    setError('');
+    setNewPhoto('');
+    setValue(name);
   }
 
-  if (!userNameStore) {
+  if (!name) {
     return <Navigate to={PATH.LOGIN}/>;
   }
 
   return (
     <div className={s.mainBlock}>
-
-      <div className={s.editBlock}>
-        <div className={s.edit}>
-          <div className={s.profileAva}>
-            <img src={userAva ? userAva : 'https://clck.ru/WQq57'} alt="user-ava"/>
+      <ChangesInputs error={error}
+                     setError={setError}
+                     setNewPhoto={setNewPhoto}
+                     inputRef={inputRef}/>
+      <div className={s.edit}>
+        <h1>Personal Information</h1>
+        <div className={s.profileAva}>
+          {!avatar && !newPhoto
+            ? <DefaultAva className={s.defaultAva}/>
+            : <img className={s.defaultAva} src={newPhoto ? newPhoto : avatar} alt="user-ava"/>}
+          <UploadAva className={s.editPhoto}
+                     onClick={() => inputRef && inputRef.current && inputRef.current.click()}/>
+        </div>
+        <div className={s.profileInfo}>
+          <InputText className={s.profileInput}
+                     value={value}
+                     onChangeText={setValue}
+          />
+          <span className={s.infoSpan}>Nickname</span>
+          <InputText value={email} className={s.profileInput} disabled/>
+          <span className={s.infoSpan}>Email</span>
+          <div className={s.profileError}>
+            {error}
           </div>
-          {isLoading
-            ? <MiniSpinner/>
-            : <>
-              <div className={s.profileInfo}>
-                <h3>{userNameStore}</h3>
-                <Button onClick={editHandler}>Edit</Button>
-              </div>
-            </>
-          }
         </div>
-
-        <div className={s.numberCards}>
-          <h3>Number of cards</h3>
-
-          <DoubleRange min={0}
-                       max={100}
-                       valueArr={valueArr}
-                       setValueArr={setValueArr}/>
-          <h2>{valueArr[0] > 50 || valueArr[1] < 50 ? 'Хватит уже крутить!!!' : ''}</h2>
+        <div className={s.buttonBlock}>
+          <ButtonLoad isSpinner={isLoading} onClick={changeName}>Save</ButtonLoad>
+          <ButtonLoad isSpinner={isLoading} onClick={cancelHandler}>Cancel</ButtonLoad>
         </div>
-
       </div>
-
-      <div className={s.packs}>
-        <h1>My packs list</h1>
-        <Debounce props={valueArr}/>
-      </div>
-
-      <EditModal active={activeModal}
-                 setActive={setActiveModal}
-                 name={userNameStore}
-                 inputValue={name}
-                 setInputValue={setName}
-                 inputFocus={onFocusHandler}
-                 changeName={changeName}
-      />
-
     </div>
   );
 };
